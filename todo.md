@@ -17,10 +17,18 @@
 - [x] **Step 2.3**: Booking Request Service (Immediate/scheduled booking + retry logic) ✅
 - [x] **Step 2.4**: Tennis Script Integration (DynamoDB direct, no .env files) ✅
 
+### Phase 2.5: Project Restructure & Organization
+- [ ] **Step 2.5.1**: Backend Directory Reorganization
+- [ ] **Step 2.5.2**: Documentation Structure & Migration
+- [ ] **Step 2.5.3**: Scripts & Configuration Organization
+- [ ] **Step 2.5.4**: Root-Level Cleanup & Monorepo Setup
+- [ ] **Step 2.5.5**: Verification & Testing Post-Restructure
+
 ### Phase 3: Frontend Interface
-- [ ] **Step 3.1**: Basic Configuration Form
-- [ ] **Step 3.2**: User Interface Enhancement
-- [ ] **Step 3.3**: Real-time Updates
+- [ ] **Step 3.1**: Frontend Project Setup & Initial Structure
+- [ ] **Step 3.2**: Basic Configuration Form
+- [ ] **Step 3.3**: User Interface Enhancement
+- [ ] **Step 3.4**: Real-time Updates
 
 ### Phase 4: Integration & Deployment
 - [ ] **Step 4.1**: End-to-End Testing
@@ -41,16 +49,18 @@
 - ✅ Step 2.3: Booking Request Service - COMPLETED
 - ✅ Step 2.4: Tennis Script Integration - COMPLETED
 - 🎉 **PHASE 2 COMPLETE** - Backend Services ready
+- 🔄 Ready to begin Phase 2.5: Project Restructure & Organization
 
 ## Next Action
-Ready to begin Phase 3: Frontend Interface. Execute Step 3.1 prompt for basic configuration form.
+Execute Phase 2.5 restructure steps to organize project into professional monorepo structure before frontend development.
 
 ## Current Session Status (2025-07-08)
 - Completed Step 2.4: Tennis Script Integration with DynamoDB configuration loading
 - All summary documents up to STEP_2_4_SUMMARY.md created
 - 🎉 **PHASE 2 COMPLETE** - Backend Services fully implemented
-- Ready to begin Phase 3: Frontend Interface
-- Focus: Basic configuration form and user interface
+- Created DIRECTORY.md with comprehensive restructure documentation
+- Ready to begin Phase 2.5: Project Restructure & Organization
+- Focus: Transform flat structure into professional monorepo before frontend development
 
 ## Notes
 - Each step builds incrementally on previous work
@@ -100,6 +110,34 @@ Ready to begin Phase 3: Frontend Interface. Execute Step 3.1 prompt for basic co
 - ✅ Enhanced booking processor with concurrent processing and cleanup operations
 - ✅ Full integration with existing booking request service and user management
 - ✅ Production-ready tennis automation with monitoring and logging capabilities
+
+### Phase 2.5 Implementation Plan
+- **Step 2.5.1**: Backend Directory Reorganization
+  - Create `backend/` directory structure
+  - Move `src/`, `tests/`, `tennis.py`, `run_api_server.py` to backend
+  - Update import paths and test configurations
+  - Verify all backend functionality works
+- **Step 2.5.2**: Documentation Structure & Migration  
+  - Create `docs/` with `development/`, `planning/`, `assets/` subdirectories
+  - Move all STEP_*.md files to `docs/development/`
+  - Move planning docs (plan.md, implementation-prompts.md, etc.) to `docs/planning/`
+  - Create new API and architecture documentation
+- **Step 2.5.3**: Scripts & Configuration Organization
+  - Create `scripts/` directory for operational scripts
+  - Create `config/` directory with Docker, Kubernetes, AWS subdirectories  
+  - Move and organize configuration files
+  - Set up environment-specific configurations
+- **Step 2.5.4**: Root-Level Cleanup & Monorepo Setup
+  - Create `frontend/`, `data/`, `logs/`, `screenshots/` directories
+  - Set up `.github/workflows/` for CI/CD
+  - Create root `package.json` for monorepo management
+  - Clean up root directory to only essential files
+- **Step 2.5.5**: Verification & Testing Post-Restructure
+  - Verify all backend tests pass
+  - Verify API endpoints work correctly
+  - Test all operational scripts
+  - Validate Docker builds
+  - Update documentation links and references
 
 ### Prerequisites for Phase 3
 - Phase 2 backend services complete with tennis automation
