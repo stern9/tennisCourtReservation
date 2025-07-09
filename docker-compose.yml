@@ -1,0 +1,22 @@
+# ABOUTME: Docker Compose configuration for local DynamoDB development
+# ABOUTME: Provides DynamoDB Local container with persistent data storage
+
+version: '3.8'
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: tennis-dynamodb-local
+    ports:
+      - "8000:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
+    volumes:
+      - dynamodb-data:/data
+    environment:
+      - AWS_ACCESS_KEY_ID=fake
+      - AWS_SECRET_ACCESS_KEY=fake
+      - AWS_DEFAULT_REGION=us-east-1
+
+volumes:
+  dynamodb-data:
+    driver: local
