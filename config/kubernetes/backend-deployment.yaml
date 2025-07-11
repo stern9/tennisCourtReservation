@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tennis-booking-backend
+  namespace: tennis-booking
+  labels:
+    app: tennis-booking-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tennis-booking-backend
+  template:
+    metadata:
+      labels:
+        app: tennis-booking-backend
+    spec:
+      containers:
+      - name: backend
+        image: tennis-booking-backend:latest
+        ports:
+        - containerPort: 8001
+        env:
+        - name: TENNIS_ENVIRONMENT
+          value: "production"
+        - name: DYNAMODB_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: tennis-booking-secrets
+              key: dynamodb-endpoint
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: tennis-booking-secrets
+              key: jwt-secret-key
+        - name: TENNIS_HEADLESS
+          value: "true"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tennis-booking-backend-service
+  namespace: tennis-booking
+spec:
+  selector:
+    app: tennis-booking-backend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8001
+  type: ClusterIP

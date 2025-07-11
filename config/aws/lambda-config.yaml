@@ -1,0 +1,164 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+  
+  DynamoDBEndpoint:
+    Type: String
+    Default: https://dynamodb.us-east-1.amazonaws.com
+  
+  JWTSecretKey:
+    Type: String
+    NoEcho: true
+
+Resources:
+  # Lambda Function
+  TennisBookingAPI:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'tennis-booking-api-${Environment}'
+      CodeUri: ../../backend/
+      Handler: src.api.main.handler
+      Runtime: python3.10
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          TENNIS_ENVIRONMENT: !Ref Environment
+          DYNAMODB_ENDPOINT: !Ref DynamoDBEndpoint
+          JWT_SECRET_KEY: !Ref JWTSecretKey
+          TENNIS_HEADLESS: 'true'
+      Events:
+        ApiGateway:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+            RestApiId: !Ref TennisBookingAPIGateway
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BookingRequestsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserConfigsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SystemConfigTable
+
+  # API Gateway
+  TennisBookingAPIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub 'tennis-booking-api-${Environment}'
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+
+  # DynamoDB Tables
+  BookingRequestsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'BookingRequests-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: request_id
+          AttributeType: S
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: request_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: UserIdIndex
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: expires_at
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  UserConfigsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'UserConfigs-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  SystemConfigTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'SystemConfig-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: config_key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: config_key
+          KeyType: HASH
+
+  # CloudWatch Log Group
+  TennisBookingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/tennis-booking-api-${Environment}'
+      RetentionInDays: 30
+
+  # CloudWatch Alarms
+  HighErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub 'tennis-booking-high-error-rate-${Environment}'
+      AlarmDescription: 'High error rate in tennis booking API'
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref TennisBookingAPI
+
+Outputs:
+  ApiGatewayUrl:
+    Description: 'API Gateway URL'
+    Value: !Sub 'https://${TennisBookingAPIGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+  
+  LambdaFunctionArn:
+    Description: 'Lambda Function ARN'
+    Value: !GetAtt TennisBookingAPI.Arn

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tennis-booking
+  labels:
+    name: tennis-booking
+    environment: production

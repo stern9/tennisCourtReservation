@@ -1,0 +1,89 @@
+{
+  "name": "tennis-court-reservation",
+  "version": "1.0.0",
+  "description": "Automated tennis court reservation system with web interface",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n \"API,Web\" -c \"bgBlue.white,bgGreen.black\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "python scripts/run_backend.py",
+    "dev:frontend": "cd frontend && volta run --node 20 npm run dev",
+    "dev:full": "concurrently -n \"DynamoDB,API,Web\" -c \"bgYellow.black,bgBlue.white,bgGreen.black\" \"npm run db:start\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "db:start": "docker-compose -f config/docker/docker-compose.yml up -d dynamodb-local",
+    "db:stop": "docker-compose -f config/docker/docker-compose.yml down",
+    "build": "npm run build:frontend",
+    "build:frontend": "cd frontend && volta run --node 20 npm run build",
+    "build:full": "npm run build:frontend && npm run build:backend",
+    "build:backend": "echo 'Backend build not required for Python FastAPI'",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "python scripts/run_backend_tests.py",
+    "test:frontend": "cd frontend && volta run --node 20 npm test",
+    "test:full": "concurrently \"npm run test:backend\" \"npm run test:frontend\"",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && python -m flake8 src tests",
+    "lint:frontend": "cd frontend && volta run --node 20 npm run lint",
+    "format": "npm run format:backend && npm run format:frontend",
+    "format:backend": "cd backend && python -m black src tests",
+    "format:frontend": "cd frontend && volta run --node 20 npm run format",
+    "tennis": "python scripts/run_tennis.py",
+    "setup": "npm run setup:volta && npm run setup:backend && npm run setup:frontend",
+    "setup:volta": "volta install node@20",
+    "setup:backend": "pip install -r requirements.txt",
+    "setup:frontend": "cd frontend && volta run --node 20 npm install",
+    "docker:dev": "docker-compose -f config/docker/docker-compose.yml up -d",
+    "docker:prod": "docker-compose -f config/docker/docker-compose.production.yml up -d",
+    "docker:down": "docker-compose -f config/docker/docker-compose.yml down",
+    "deploy:aws": "sam deploy --template-file config/aws/lambda-config.yaml",
+    "deploy:k8s": "kubectl apply -f config/kubernetes/",
+    "clean": "npm run clean:backend && npm run clean:frontend",
+    "clean:backend": "find backend -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true",
+    "clean:frontend": "cd frontend && rm -rf .next node_modules/.cache"
+  },
+  "keywords": [
+    "tennis",
+    "booking",
+    "automation",
+    "reservation",
+    "fastapi",
+    "react",
+    "dynamodb"
+  ],
+  "author": "Tennis Booking System",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "prettier": "^3.0.0",
+    "eslint": "^8.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "backend/**/*.py": [
+      "python -m black",
+      "python -m flake8"
+    ],
+    "frontend/**/*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "**/*.md": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/tennis-court-reservation"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/tennis-court-reservation/issues"
+  },
+  "homepage": "https://github.com/your-username/tennis-court-reservation#readme"
+}

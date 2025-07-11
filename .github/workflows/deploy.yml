@@ -1,0 +1,102 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      dynamodb:
+        image: amazon/dynamodb-local:latest
+        ports:
+          - 8000:8000
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v
+      env:
+        DYNAMODB_LOCAL_ENDPOINT: http://localhost:8000
+        AWS_ACCESS_KEY_ID: fake
+        AWS_SECRET_ACCESS_KEY: fake
+        AWS_DEFAULT_REGION: us-east-1
+        TENNIS_ENVIRONMENT: test
+        JWT_SECRET_KEY: test-secret-key
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install AWS SAM CLI
+      run: |
+        pip install aws-sam-cli
+    
+    - name: Build SAM application
+      run: |
+        sam build --template-file config/aws/lambda-config.yaml
+    
+    - name: Deploy to AWS
+      run: |
+        sam deploy \
+          --stack-name tennis-booking-production \
+          --s3-bucket ${{ secrets.S3_DEPLOYMENT_BUCKET }} \
+          --parameter-overrides \
+            Environment=production \
+            JWTSecretKey=${{ secrets.JWT_SECRET_KEY }} \
+          --capabilities CAPABILITY_IAM \
+          --no-confirm-changeset \
+          --no-fail-on-empty-changeset
+    
+    - name: Update API Gateway deployment
+      run: |
+        # Get the API Gateway ID from the stack output
+        API_ID=$(aws cloudformation describe-stacks \
+          --stack-name tennis-booking-production \
+          --query 'Stacks[0].Outputs[?OutputKey==`ApiGatewayUrl`].OutputValue' \
+          --output text | cut -d'/' -f3)
+        
+        # Create a new deployment
+        aws apigateway create-deployment \
+          --rest-api-id $API_ID \
+          --stage-name production
+    
+    - name: Invalidate CloudFront cache (if applicable)
+      run: |
+        if [ ! -z "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+        fi

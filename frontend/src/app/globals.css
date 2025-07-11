@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+:root {
+  /* Tennis Court Colors */
+  --background: #ffffff;
+  --foreground: #1f2937;
+  --court-green: #2d5d31;
+  --court-blue: #1e40af;
+  --court-clay: #d97706;
+  --court-line: #ffffff;
+  --accent-green: #22c55e;
+  --accent-blue: #3b82f6;
+  --accent-orange: #f59e0b;
+  --muted: #6b7280;
+  --muted-foreground: #9ca3af;
+  --border: #e5e7eb;
+  --input: #f9fafb;
+  --ring: #3b82f6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-court-green: var(--court-green);
+  --color-court-blue: var(--court-blue);
+  --color-court-clay: var(--court-clay);
+  --color-court-line: var(--court-line);
+  --color-accent-green: var(--accent-green);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-orange: var(--accent-orange);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --court-green: #166534;
+    --court-blue: #1e40af;
+    --court-clay: #ea580c;
+    --court-line: #f1f5f9;
+    --accent-green: #22c55e;
+    --accent-blue: #60a5fa;
+    --accent-orange: #fbbf24;
+    --muted: #64748b;
+    --muted-foreground: #94a3b8;
+    --border: #334155;
+    --input: #1e293b;
+    --ring: #3b82f6;
+    --success: #22c55e;
+    --warning: #fbbf24;
+    --error: #f87171;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.6;
+}
+
+/* Tennis Court Specific Components */
+.court-surface {
+  background: var(--court-green);
+  border: 2px solid var(--court-line);
+}
+
+.court-surface.clay {
+  background: var(--court-clay);
+}
+
+.court-surface.hard {
+  background: var(--court-blue);
+}
+
+.court-line {
+  background: var(--court-line);
+  height: 2px;
+}
+
+/* Status Indicators */
+.status-available {
+  color: var(--success);
+}
+
+.status-occupied {
+  color: var(--error);
+}
+
+.status-pending {
+  color: var(--warning);
+}
+
+/* Simple transitions */
+.transition-smooth {
+  transition: all 0.2s ease-in-out;
+}

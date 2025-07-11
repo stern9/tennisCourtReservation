@@ -62,60 +62,105 @@ Frontend (React/HTML) → API Gateway → Lambda Functions → DynamoDB → Tenn
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Python 3.10+**
-- **Docker** (for DynamoDB Local)
-- **AWS CLI** (for production deployment)
-- **Git**
+- **Python 3.10+** - Backend API server
+- **Node.js 20+** - Frontend application (use Volta for version management)
+- **Docker** - For DynamoDB Local and containerized testing
+- **Git** - Version control
+- **Volta** - Node.js version management (recommended)
 
-### 1. **Environment Setup**
+### 🎯 **Quick Start - Full Stack Development**
 
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd tennisCourtReservation
 
-# Create and activate virtual environment
+# Install Volta for Node.js version management
+curl https://get.volta.sh | bash
+volta install node@20
+
+# Set up the entire project
+npm run setup
+
+# Start the complete development environment
+npm run dev:full
+```
+
+This will start:
+- **DynamoDB Local** (Yellow) - Database on port 8000
+- **Backend API** (Blue) - FastAPI server on port 8000
+- **Frontend Web** (Green) - Next.js app on port 3001
+
+### 📋 **Development Commands**
+
+```bash
+# Full-stack development (recommended)
+npm run dev:full         # Start all services with colored output
+npm run dev              # Start just API + Frontend
+npm run test:full        # Run all tests
+npm run build:full       # Build everything
+
+# Individual services
+npm run dev:backend      # Start FastAPI backend only
+npm run dev:frontend     # Start Next.js frontend only
+npm run db:start         # Start DynamoDB Local only
+npm run db:stop          # Stop DynamoDB Local
+
+# Development utilities
+npm run clean            # Clean build artifacts
+npm run lint             # Lint all code
+npm run format           # Format all code
+```
+
+### 🔧 **Manual Setup (if needed)**
+
+#### 1. **Environment Setup**
+
+```bash
+# Backend setup
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
+
+# Frontend setup with Volta
+volta install node@20
+cd frontend && volta run --node 20 npm install
 
 # Copy environment configuration
 cp .env.example .env
 # Edit .env with your tennis website credentials
 ```
 
-### 2. **Database Setup**
+#### 2. **Database Setup**
 
 ```bash
 # Start DynamoDB Local with Docker
-docker-compose up -d
+npm run db:start
 
 # Set up database tables and test data
-python src/setup_database.py
+python backend/src/setup_database.py
 
 # Verify database setup
 python -c "
-from src.database.connection import get_dynamodb_resource
+from backend.src.database.connection import get_dynamodb_resource
 dynamodb = get_dynamodb_resource()
 print('Tables:', list(dynamodb.tables.all()))
 "
 ```
 
-### 3. **Security Setup**
+#### 3. **Security Setup**
 
 ```bash
 # Initialize encryption keys for development
 python -c "
-from src.security import initialize_encryption_keys, Environment
+from backend.src.security import initialize_encryption_keys, Environment
 key = initialize_encryption_keys(Environment.DEVELOPMENT)
 print(f'Encryption key initialized: {key.key_id}')
 "
 
 # Test encryption service
 python -c "
-from src.security import get_encryption_service
+from backend.src.security import get_encryption_service
 service = get_encryption_service()
 health = service.health_check()
 print(f'Encryption status: {health[\"status\"]}')
@@ -304,21 +349,45 @@ tennis-booking-automation/
 - **Environment-specific keys** for security isolation
 - **Health monitoring** for key availability
 
-## 🚦 Current Limitations & What's Missing
+## ✅ Current Status: Phase 3.2 Complete - UI Needs Refinement
 
-### **❌ Not Yet Implemented (Phases 2-4)**
+### **✅ Completed Implementation**
 
-#### **Phase 2: Backend Services** 
-- **🔧 API Gateway & Lambda Functions**: REST endpoints for configuration management
-- **🔧 User Authentication Service**: JWT-based auth with session management
-- **🔧 Booking Request Service**: Real-time booking management and status tracking
-- **🔧 Tennis Script Integration**: DynamoDB configuration loading in existing script
+#### **Phase 1: Foundation & Data Layer** ✅
+- **✅ DynamoDB Setup**: Complete local development environment
+- **✅ Encryption & Security**: AWS KMS integration with secure credential storage
+- **✅ Data Models**: Comprehensive Pydantic models with validation
+- **✅ Testing Framework**: 104+ test methods covering all components
 
-#### **Phase 3: Frontend Interface**
-- **🔧 Web Configuration Form**: User-friendly interface for booking parameters
-- **🔧 User Dashboard**: Booking history, status tracking, profile management
-- **🔧 Real-time Updates**: WebSocket integration for live booking status
-- **🔧 Mobile-Responsive Design**: Cross-device compatibility
+#### **Phase 2: Backend Services** ✅
+- **✅ FastAPI REST API**: Complete endpoints for configuration and booking management
+- **✅ JWT Authentication**: User authentication with tennis website credentials
+- **✅ Booking Service**: Real-time booking management with court-specific logic
+- **✅ Tennis Script Integration**: DynamoDB configuration loading operational
+
+#### **Phase 3.1-3.2: Frontend Interface** ✅
+- **✅ Next.js 15 Application**: Complete TypeScript setup with Tailwind CSS
+- **✅ Component Library**: Professional UI components with tennis court theme
+- **✅ Form System**: Login, configuration, and booking forms with validation
+- **✅ Dashboard Interface**: Responsive layout with sidebar and navigation
+- **✅ State Management**: Zustand store with API integration
+
+### **🎨 Phase 3.3: UI Refinement Required**
+
+**Current Issue**: Frontend is functional but needs visual polish and better UX flow.
+
+#### **Visual Design Improvements Needed**
+- **Typography**: Better font hierarchy and readability
+- **Spacing**: Improved component spacing and visual rhythm
+- **Tennis Theme**: Enhanced sports branding and court visuals
+- **Component Polish**: Better button styles, form layouts, card designs
+- **Mobile Experience**: Enhanced touch interactions and responsiveness
+
+#### **UX Flow Enhancements**
+- **Login Flow**: Streamlined authentication onboarding
+- **Configuration UX**: Better multi-step form experience
+- **Booking Flow**: Simplified court selection and date/time picking
+- **Dashboard Layout**: Improved information density and quick actions
 
 #### **Phase 4: Integration & Deployment**
 - **🔧 End-to-End Testing**: Complete workflow automation testing
@@ -367,11 +436,30 @@ tennis-booking-automation/
 - **Integration Testing**: Verify all components work together
 - **Performance Testing**: Validate response times and scalability
 
+## 📚 Documentation
+
+### Planning & Architecture
+- **[Phase 3.3 Plan](docs/planning/PHASE_3_3_PLAN.md)** - Completed UI redesign and improvements
+- **[Phase 4 Plan](docs/planning/PHASE_4_BACKEND_INTEGRATION_PLAN.md)** - Backend integration roadmap
+- **[Implementation Prompts](docs/planning/implementation-prompts.md)** - Detailed development prompts
+- **[Original Plan](docs/planning/plan.md)** - Complete project roadmap
+
+### Development Summaries
+- **[UI Redesign Summary](docs/development/UI_REDESIGN_SUMMARY.md)** - Complete UI transformation documentation
+- **[Restructure Summary](docs/development/RESTRUCTURE_COMPLETE.md)** - Directory restructuring details
+- **[Step Summaries](docs/development/)** - Individual development step documentation
+
+### System Documentation
+- **[API Documentation](docs/API_DOCUMENTATION.md)** - Complete API reference
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - System architecture overview
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Production deployment instructions
+- **[Directory Structure](docs/DIRECTORY.md)** - Project organization guide
+
 ## 🤝 Contributing
 
 ### **Development Workflow**
 1. **Check Current Status**: Review `todo.md` for current phase and next steps
-2. **Follow Implementation Prompts**: Use detailed prompts in `implementation-prompts.md`
+2. **Follow Implementation Prompts**: Use detailed prompts in `docs/planning/implementation-prompts.md`
 3. **Write Tests First**: Implement comprehensive test coverage
 4. **Update Documentation**: Create step summaries and update README
 5. **Verify Integration**: Ensure new components work with existing system

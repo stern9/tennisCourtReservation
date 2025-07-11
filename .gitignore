@@ -234,5 +234,8 @@ local_config.py
 dev_settings.py
 debug_config.py
 
-# Claude.md
-claude.md
+# Ignore all markdown files
+*.md
+# But do NOT ignore README.md (case-insensitive)
+!README.md
+!README.MD

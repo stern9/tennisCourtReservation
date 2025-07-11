@@ -50,9 +50,11 @@ def check_dynamodb_local():
 def check_database_tables():
     """Check if database tables exist"""
     try:
-        from src.database.connection import get_dynamodb_resource
+        # Add src directory to path for importing our modules
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+        from database.connection import get_resource
         
-        dynamodb = get_dynamodb_resource()
+        dynamodb = get_resource()
         table_names = [table.name for table in dynamodb.tables.all()]
         
         required_tables = ['UserConfigs', 'BookingRequests', 'SystemConfig']
@@ -60,7 +62,7 @@ def check_database_tables():
         
         if missing_tables:
             print(f"❌ Missing tables: {missing_tables}")
-            print("Please run: python src/setup_database.py")
+            print("Please run: python backend/src/setup_database.py")
             return False
         
         print("✅ All required tables exist")
@@ -79,15 +81,18 @@ def run_server():
     print("\n Press Ctrl+C to stop the server\n")
     
     try:
-        # Run uvicorn server
+        # Add src directory to path for importing our modules
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+        
+        # Run uvicorn server from backend directory
         subprocess.run([
             sys.executable, "-m", "uvicorn",
-            "src.api.main:app",
+            "backend.src.api.main:app",
             "--host", "0.0.0.0",
             "--port", "8001",
             "--reload",
             "--log-level", "info"
-        ])
+        ], cwd=os.path.dirname(os.path.dirname(__file__)))
     except KeyboardInterrupt:
         print("\n👋 Server stopped")
 

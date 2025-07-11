@@ -52,13 +52,13 @@ def run_tests():
     os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
     
     try:
-        # Run pytest
+        # Run pytest from backend directory
         result = subprocess.run([
             sys.executable, '-m', 'pytest', 
-            'tests/', 
+            'backend/tests/', 
             '-v', 
             '--tb=short'
-        ], check=True)
+        ], check=True, cwd=os.path.dirname(os.path.dirname(__file__)))
         
         logger.info("All tests passed!")
         return True
